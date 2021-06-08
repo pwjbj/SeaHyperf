@@ -11,16 +11,26 @@ declare(strict_types=1);
  */
 namespace App\Controller;
 
+use Hyperf\Di\Annotation\Inject;
+use App\JsonRpc\SlaveService;
+use Fractal\Seata\Tc\Annotation\GlobalTransactional;
+
 class IndexController extends AbstractController
 {
+    /**
+     * @Inject
+     * @var SlaveService
+     */
+    private $slave;
+
+    /**
+     * @GlobalTransactional
+     */
     public function index()
     {
         $user = $this->request->input('user', 'Hyperf');
         $method = $this->request->getMethod();
-
-        return [
-            'method' => $method,
-            'message' => "Hello {$user}.",
-        ];
+        $res = $this->slave->slaveClient();
+        return $res;
     }
 }
