@@ -16,11 +16,18 @@ class TransactionManager
      */
     protected $idGenerator;
 
+    protected $manager;
+
     /**
      * @Inject
      * @var RootContext
      */
     protected $rootContext;
+
+    public function __construct($manager)
+    {
+        $this->manager = $manager;
+    }
 
     public function makeXid(): string
     {
@@ -34,7 +41,6 @@ class TransactionManager
             'service' => $service,
             'status' => 0,
         ]);
-
         //分支事物id
     }
 
@@ -44,14 +50,14 @@ class TransactionManager
         $this->rootContext->modify($service, $status);
     }
 
-    public function commit()
+    public function commit(string $xid):void
     {
-
+        $this->manager->commit($xid);
     }
 
-    public function rollback()
+    public function rollback(string $xid):void
     {
-
+        $this->manager->rollback($xid);
     }
 
 

@@ -52,7 +52,7 @@ class BaseModelAspect extends AbstractAspect
                 //提交本地事物
                 Db::beginTransaction();
                 list($result, $undoItems) = $this->undo->recognizer($instance, $proceedingJoinPoint);
-                $this->undo->create($undoItems);
+                $this->undo->flushUndoLogs($undoItems);
                 Db::commit();
                 return $result;
             }catch (\Throwable $e){
@@ -64,31 +64,4 @@ class BaseModelAspect extends AbstractAspect
             return $proceedingJoinPoint->process();
         }
     }
-
-    public function recognizer(object $instance, ProceedingJoinPoint $proceedingJoinPoint)
-    {
-        //表名
-        $table = $instance->getTable();
-        //操作类型
-        switch ($proceedingJoinPoint->className . '::' . $proceedingJoinPoint->methodName) {
-            case Model::class . '::' . 'save':
-                $sqlType = $instance->exists === true ? 'UPDATE' : 'INSERT';
-                break;
-            case Model::class . '::' . 'delete':
-                $sqlType = 'DELETE';
-                $undoItems = [];
-                $keyName = $instance->getKeyName();
-                $attributes = $instance->getAttributes();
-                $undoItems['beforeImage']['rows'][] = $attributes;
-                $undoItems['beforeImage']['tableName'] = $table;
-                $undoItems['afterImage']['rows'][] = [$keyName => $attributes];
-                $undoItems['afterImage']['tableName'] = $table;
-                $undoItems['sqlType'] = $sqlType;
-                break;
-        }
-
-        return $undoItems;
-    }
-
-
 }
