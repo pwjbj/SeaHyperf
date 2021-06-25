@@ -57,12 +57,9 @@ class ServiceManager
         //分支进程提交
         $services = $this->rootContext->getServices();
         foreach ($services as $item){
-            if($item['status'] == self::BRANCH_SUCCESS){
-                //TODO 使用co
-                $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
-                $method = 'branchCommit';
-                $class->$method(...[$xid]);
-            }
+            $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
+            $method = 'branchCommit';
+            $class->$method(...[$xid]);
         }
     }
 
@@ -73,12 +70,10 @@ class ServiceManager
         //分支进程回滚
         $services = $this->rootContext->getServices();
         foreach ($services as $item){
-            if($item['status'] == self::BRANCH_SUCCESS){
-                //TODO 使用co
-                $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
-                $method = 'branchRollback';
-                $class->$method(...[$xid]);
-            }
+            //TODO 使用co
+            $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
+            $method = 'branchRollback';
+            $class->$method(...[$xid]);
         }
     }
 

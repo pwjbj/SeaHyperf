@@ -101,7 +101,7 @@ class UndoManager
 
     public function commit(string $xid): void
     {
-        var_dump('hahha');
+
     }
 
     public function rollback(string $xid): void
