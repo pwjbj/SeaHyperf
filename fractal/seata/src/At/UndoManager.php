@@ -101,7 +101,7 @@ class UndoManager
 
     public function commit(string $xid): void
     {
-
+        var_dump('hahha');
     }
 
     public function rollback(string $xid): void
@@ -111,7 +111,6 @@ class UndoManager
             $database = config('seata.at', 'default');
             $prefix = env('DB_PREFIX', '');
             $undoLog = $prefix . 'undo_log';
-            $xid = '266205965543149568';
             $undoLogs = Db::connection($database)->select("SELECT * FROM `$undoLog` WHERE log_status= ? and xid = ? for update", [self::NORMAL, $xid]);
 
             if ($undoLogs) {

@@ -43,20 +43,23 @@ class RootContext
         return $this->rpcContent->get($xid, []);
     }
 
-    public function setServices(array $service): void
+    public function setServices(array $service, int $status): void
     {
         $xid = $this->getXid();
         $registerService = $this->getServices();
-        $registerService[] = $service;
+        $registerService[] = [
+            'endpoints' => $service,
+            'status' => $status,
+        ];
         $this->rpcContent->set($xid, $registerService);
     }
 
-    public function modify(string $service, int $status): void
+    public function modify(array $service, int $status): void
     {
         $xid = $this->getXid();
         $services = $this->rpcContent->get($xid);
         foreach($services as &$item){
-            if($item['service'] == $service){
+            if($item['endpoints'] === $service){
                 $item['status'] = $status;
             }
         }

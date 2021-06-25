@@ -44,9 +44,9 @@ class IndexController extends AbstractController
 //        SeaTest::query()->create([
 //            'name' => '新增2'
 //        ]);
-//        $b = new SeaTest();
-//        $b->name = 'pwjtest';
-//        $b->save();
+        $b = new SeaTest();
+        $b->name = 'pwjtest';
+        $b->save();
 //        $a = SeaTest::query()->where('name', '新增')->get();
 //        foreach ($a as $b){
 //            $b->name = $b->name . $b->id;
@@ -55,7 +55,7 @@ class IndexController extends AbstractController
 //        $c = SeaTest::query()->where('name', '哈哈哈')->first();
 //        $c->delete();
 //        Db::rollBack();
-//        $res = $this->slave->slaveClient();
+        $res = $this->slave->slaveClient('hh', 'sds');
         return 1;
     }
 }

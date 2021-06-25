@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\JsonRpc;
 
-interface SlaveService
+use Fractal\Seata\Tc\AtInterface;
+
+interface SlaveService extends AtInterface
 {
-    public function slaveClient();
+    public function slaveClient($a , $b);
 }

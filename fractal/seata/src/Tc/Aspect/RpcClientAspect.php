@@ -9,8 +9,10 @@ use Hyperf\Di\Aop\AbstractAspect;
 use Hyperf\Di\Aop\ProceedingJoinPoint;
 use Hyperf\RpcClient\ServiceClient;
 use Fractal\Seata\Context\RootContext;
-use Fractal\Seata\Tc\TransactionManager;
+use Fractal\Seata\Tc\ServiceManager;
 use Hyperf\Di\Annotation\Inject;
+use Fractal\Seata\At\UndoManager;
+use Fractal\Seata\Exception\BranchTransactionException;
 
 /**
  * @Aspect
@@ -23,12 +25,6 @@ class RpcClientAspect extends AbstractAspect
      */
     protected $rootContext;
 
-    /**
-     * @Inject
-     * @var TransactionManager
-     */
-    protected $transactionManager;
-
     public $classes = [
         ServiceClient::class . "::__call",
     ];
@@ -36,19 +32,21 @@ class RpcClientAspect extends AbstractAspect
     public function process(ProceedingJoinPoint $proceedingJoinPoint)
     {
         $xid = $this->rootContext->getXid();
-        if(!empty($xid)){
+        $relation = self::guessBelongsToRelation();
+        if(!empty($xid) && $relation['function'] != 'branchRollback' && $relation['function'] != 'branchCommit'){
             try {
-                $relation = self::guessBelongsToRelation();
                 //注册分支事物
-                $this->transactionManager->register($relation['class'].'::'.$relation['function']);
+                $serviceManager = new ServiceManager();
+                $class = explode('_', $relation['class'])[0];
+                $serviceManager->branchRegister($class, $relation['function'], $proceedingJoinPoint->arguments['keys']['params']);
                 $result = $proceedingJoinPoint->process();
                 //分支事物完成
-                $this->transactionManager->globalReport($relation['class'].'::'.$relation['function'], 1);
+                $serviceManager->branchSuccess($class, $relation['function'], $proceedingJoinPoint->arguments['keys']['params']);
                 return $result;
             }catch (\Throwable $e){
-                //分支事物回滚
-                $this->transactionManager->globalReport($relation['class'].'::'.$relation['function'], 2);
-                throw new $e;
+                //分支事物失败
+                $serviceManager->branchFailed($class, $relation['function'], $proceedingJoinPoint->arguments['keys']['params']);
+                throw new BranchTransactionException;
             }
         }else{
             //正常得rpc调用
@@ -59,7 +57,8 @@ class RpcClientAspect extends AbstractAspect
 
     protected function guessBelongsToRelation()
     {
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 8);
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 9);
+//        var_dump($backtrace);
         return $backtrace[7];
     }
 }

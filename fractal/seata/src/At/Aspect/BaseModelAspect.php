@@ -10,7 +10,6 @@ use Hyperf\Di\Aop\ProceedingJoinPoint;
 use Hyperf\Database\Model\Model;
 use Fractal\Seata\Context\RootContext;
 use Fractal\Seata\Exception\BranchTransactionException;
-use Fractal\Seata\Tc\TransactionManager;
 use Hyperf\Di\Annotation\Inject;
 use Fractal\Seata\At\UndoManager;
 use Hyperf\DbConnection\Db;
@@ -32,12 +31,6 @@ class BaseModelAspect extends AbstractAspect
      */
     protected $undo;
 
-    /**
-     * @Inject
-     * @var TransactionManager
-     */
-    protected $transactionManager;
-
     public $classes = [
         Model::class . "::save",
         Model::class . "::delete",
@@ -57,6 +50,7 @@ class BaseModelAspect extends AbstractAspect
                 return $result;
             }catch (\Throwable $e){
                 //触发回滚
+                Db::rollBack();
                 throw new BranchTransactionException;
             }
 
