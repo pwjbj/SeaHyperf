@@ -35,11 +35,12 @@ class GlobalTransactionalAspect extends AbstractAspect
         $xid = $transactionManager->makeXid();
         try {
             $result = $proceedingJoinPoint->process();
-            $transactionManager->globalCommit($xid);
-            return $result;
         }catch (\Throwable $e){
             $transactionManager->globalRollback($xid);
+            throw $e;
         }
+        $transactionManager->globalCommit($xid);
+        return $result;
 
     }
 
