@@ -14,7 +14,7 @@ class CreateUndoLogTable extends Migration
         Schema::create('undo_log', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('xid', 100);
-            $table->string('context', 100)->default('');
+            $table->string('context', 255)->default('');
             $table->binary('rollback_info');
             $table->unsignedTinyInteger('log_status')->default(0)->comment('0:normal status,1:defense status');
             $table->timestamps();
