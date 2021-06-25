@@ -26,9 +26,6 @@ class RootContext
     public function getXid(): string
     {
         $xid = $this->rpcContent->get('xid', '');
-        if(empty($xid)){
-            throw new XidNotFoundException;
-        }
         return $xid;
     }
 

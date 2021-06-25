@@ -51,26 +51,26 @@ class ServiceManager
 
     public function branchCommit($manager, $xid):void
     {
-        //TODO 使用异步方式
-        //当前进程下得提交
-        $manager->commit($xid);
-        //分支进程提交
         $services = $this->rootContext->getServices();
-        foreach ($services as $item){
-            $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
-            $method = 'branchCommit';
-            $class->$method(...[$xid]);
-        }
+        co(function ()use ($manager, $xid, $services){
+            //当前进程下得提交
+            $manager->commit($xid);
+            //分支提交
+            foreach ($services as $item){
+                $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
+                $method = 'branchCommit';
+                $class->$method(...[$xid]);
+            }
+        });
     }
 
     public function branchRollback($manager, $xid):void
     {
         //当前进程下得回滚
         $manager->rollback($xid);
-        //分支进程回滚
+        //分支回滚
         $services = $this->rootContext->getServices();
         foreach ($services as $item){
-            //TODO 使用co
             $class = ApplicationContext::getContainer()->get($item['endpoints']['class']);
             $method = 'branchRollback';
             $class->$method(...[$xid]);
